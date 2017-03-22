@@ -1,0 +1,2 @@
+websockets==3.2
+tailer==0.4.1
