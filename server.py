@@ -7,7 +7,6 @@ import argparse
 import websockets
 from collections import deque
 from urllib.parse import urlparse, parse_qs
-from tailer import Tailer
 from ansi2html import Ansi2HTMLConverter
 
 
@@ -44,17 +43,18 @@ def view_log(websocket, path):
 
         with open(file_path) as f:
 
-            lines = deque(f, 1000)
-            lines = ''.join(lines)
-            lines = conv.convert(lines, full=False, ensure_trailing_newline=True)
-            yield from websocket.send(lines)
-            del lines
+            content = ''.join(deque(f, 1000))
+            content = conv.convert(content, full=False)
+            yield from websocket.send(content)
 
             if tail:
-                for line in Tailer(f).follow():
-                    line = conv.convert(line, full=False, ensure_trailing_newline=True)
-                    yield from websocket.send(line)
-                    yield from asyncio.sleep(1)
+                while True:
+                    content = f.read()
+                    if content:
+                        content = conv.convert(content, full=False)
+                        yield from websocket.send(content)
+                    else:
+                        yield from asyncio.sleep(1)
             else:
                 yield from websocket.close()
 
@@ -77,9 +77,7 @@ def log_close(websocket, path, exception=None):
     message = 'Closed, remote={}, path={}'.format(websocket.remote_address, path)
     if exception is not None:
         message += ', exception={}'.format(exception)
-        logging.warn(message)
-    else:
-        logging.info(message)
+    logging.info(message)
 
 def main():
 
