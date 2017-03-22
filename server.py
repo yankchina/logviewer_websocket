@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import time
 import os.path
 import asyncio
 import logging
@@ -9,6 +10,8 @@ from collections import deque
 from urllib.parse import urlparse, parse_qs
 from ansi2html import Ansi2HTMLConverter
 
+NUM_LINES = 1000
+HEARTBEAT_INTERVAL = 15 # seconds
 
 # init
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
@@ -43,11 +46,12 @@ def view_log(websocket, path):
 
         with open(file_path) as f:
 
-            content = ''.join(deque(f, 1000))
+            content = ''.join(deque(f, NUM_LINES))
             content = conv.convert(content, full=False)
             yield from websocket.send(content)
 
             if tail:
+                last_heartbeat = time.time()
                 while True:
                     content = f.read()
                     if content:
@@ -55,6 +59,19 @@ def view_log(websocket, path):
                         yield from websocket.send(content)
                     else:
                         yield from asyncio.sleep(1)
+
+                    # heartbeat
+                    if time.time() - last_heartbeat > HEARTBEAT_INTERVAL:
+                        try:
+                            yield from websocket.send('ping')
+                            pong = yield from asyncio.wait_for(websocket.recv(), 5)
+                            if pong != 'pong':
+                                raise Exception()
+                        except Exception:
+                            raise Exception('Ping error')
+                        else:
+                            last_heartbeat = time.time()
+
             else:
                 yield from websocket.close()
 
