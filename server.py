@@ -8,11 +8,13 @@ import websockets
 from collections import deque
 from urllib.parse import urlparse, parse_qs
 from tailer import Tailer
+from ansi2html import Ansi2HTMLConverter
 
 
 # init
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 allowed_prefixes = []
+conv = Ansi2HTMLConverter(inline=True)
 
 @asyncio.coroutine
 def view_log(websocket, path):
@@ -38,16 +40,19 @@ def view_log(websocket, path):
             raise ValueError('文件不存在')
 
         query = parse_qs(parse_result.query)
-        tail = query and query['tail'] and is_true(query['tail'][0])
+        tail = query and query['tail'] and query['tail'][0] == '1'
 
         with open(file_path) as f:
 
             lines = deque(f, 1000)
-            yield from websocket.send(''.join(lines))
+            lines = ''.join(lines)
+            lines = conv.convert(lines, full=False, ensure_trailing_newline=True)
+            yield from websocket.send(lines)
             del lines
 
             if tail:
                 for line in Tailer(f).follow():
+                    line = conv.convert(line, full=False, ensure_trailing_newline=True)
                     yield from websocket.send(line)
                     yield from asyncio.sleep(1)
             else:
@@ -55,7 +60,7 @@ def view_log(websocket, path):
 
     except ValueError as e:
         try:
-            yield from websocket.send(str(e))
+            yield from websocket.send('<font color="red"><strong>{}</strong></font>'.format(e))
             yield from websocket.close()
         except Exception:
             pass
@@ -75,9 +80,6 @@ def log_close(websocket, path, exception=None):
         logging.warn(message)
     else:
         logging.info(message)
-
-def is_true(value):
-    return isinstance(value, str) and value.lower() in ('true', '1', 'yes')
 
 def main():
 
