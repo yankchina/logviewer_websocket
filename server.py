@@ -27,7 +27,7 @@ def view_log(websocket, path):
         try:
             parse_result = urlparse(path)
         except Exception:
-            raise ValueError('URL不正确')
+            raise ValueError('Fail to parse URL')
 
         file_path = os.path.abspath(parse_result.path)
         allowed = False
@@ -36,10 +36,10 @@ def view_log(websocket, path):
                 allowed = True
                 break
         if not allowed:
-            raise ValueError('无权访问文件')
+            raise ValueError('Forbidden')
 
         if not os.path.isfile(file_path):
-            raise ValueError('文件不存在')
+            raise ValueError('Not found')
 
         query = parse_qs(parse_result.query)
         tail = query and query['tail'] and query['tail'][0] == '1'
