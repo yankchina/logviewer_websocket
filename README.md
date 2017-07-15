@@ -1,7 +1,7 @@
 # logviewer
 
-```bash
-$ python -m venv venv
+```
+$ python -m venv .virtualenv
 $ ./ve pip install -r requirements.txt
 $ ./ve python server.py -h
 usage: server.py [-h] [--host HOST] [--port PORT] --prefix PREFIX
