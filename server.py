@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
-
 import time
 import os.path
 import asyncio
 import logging
 import argparse
-import websockets
 from collections import deque
 from urllib.parse import urlparse, parse_qs
+
+import websockets
 from ansi2html import Ansi2HTMLConverter
 
 NUM_LINES = 1000
@@ -17,6 +16,7 @@ HEARTBEAT_INTERVAL = 15 # seconds
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 allowed_prefixes = []
 conv = Ansi2HTMLConverter(inline=True)
+
 
 @asyncio.coroutine
 def view_log(websocket, path):
@@ -90,14 +90,15 @@ def view_log(websocket, path):
     else:
         log_close(websocket, path)
 
+
 def log_close(websocket, path, exception=None):
     message = 'Closed, remote={}, path={}'.format(websocket.remote_address, path)
     if exception is not None:
         message += ', exception={}'.format(exception)
     logging.info(message)
 
-def main():
 
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8765)

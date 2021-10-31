@@ -1,8 +1,17 @@
 # logviewer
 
+## Setup
+
 ```
 $ python -m venv .virtualenv
 $ ./ve pip install -r requirements.txt
+```
+
+## Demo
+
+### Start WebSocket server
+
+```
 $ ./ve python server.py -h
 usage: server.py [-h] [--host HOST] [--port PORT] --prefix PREFIX
 
@@ -11,5 +20,14 @@ optional arguments:
   --host HOST
   --port PORT
   --prefix PREFIX  Allowed directories
-$ ./ve python server.py --host 127.0.0.1 --port 8765 --prefix /tmp/dir1/ --prefix /tmp/dir2/
+
+$ ./ve python server.py --host 127.0.0.1 --port 8765 --prefix /tmp/ --prefix /tmp/dir1
 ```
+
+### Start demo client
+
+```
+$ ./ve python -m http.server
+```
+
+Create `/tmp/demo.log` file and browse `http://localhost:8000/demo.html`, you will see the content of the log file. Append logs to this file and the content will be shown in browser immediately.
