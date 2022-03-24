@@ -18,8 +18,7 @@ allowed_prefixes = []
 conv = Ansi2HTMLConverter(inline=True)
 
 
-@asyncio.coroutine
-def view_log(websocket, path):
+async def view_log(websocket, path):
 
     logging.info('Connected, remote={}, path={}'.format(websocket.remote_address, path))
 
@@ -48,7 +47,7 @@ def view_log(websocket, path):
 
             content = ''.join(deque(f, NUM_LINES))
             content = conv.convert(content, full=False)
-            yield from websocket.send(content)
+            await websocket.send(content)
 
             if tail:
                 last_heartbeat = time.time()
@@ -56,15 +55,15 @@ def view_log(websocket, path):
                     content = f.read()
                     if content:
                         content = conv.convert(content, full=False)
-                        yield from websocket.send(content)
+                        await websocket.send(content)
                     else:
-                        yield from asyncio.sleep(1)
+                        await asyncio.sleep(1)
 
                     # heartbeat
                     if time.time() - last_heartbeat > HEARTBEAT_INTERVAL:
                         try:
-                            yield from websocket.send('ping')
-                            pong = yield from asyncio.wait_for(websocket.recv(), 5)
+                            await websocket.send('ping')
+                            pong = await asyncio.wait_for(websocket.recv(), 5)
                             if pong != 'pong':
                                 raise Exception()
                         except Exception:
@@ -73,12 +72,12 @@ def view_log(websocket, path):
                             last_heartbeat = time.time()
 
             else:
-                yield from websocket.close()
+                await websocket.close()
 
     except ValueError as e:
         try:
-            yield from websocket.send('<font color="red"><strong>{}</strong></font>'.format(e))
-            yield from websocket.close()
+            await websocket.send('<font color="red"><strong>{}</strong></font>'.format(e))
+            await websocket.close()
         except Exception:
             pass
 
@@ -98,6 +97,11 @@ def log_close(websocket, path, exception=None):
     logging.info(message)
 
 
+async def serve(host: str, port: int):
+    async with websockets.serve(view_log, host, port):
+        await asyncio.Future()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='127.0.0.1')
@@ -106,9 +110,7 @@ def main():
     args = parser.parse_args()
 
     allowed_prefixes.extend(args.prefix)
-    start_server = websockets.serve(view_log, args.host, args.port)
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
+    asyncio.run(serve(args.host, args.port))
 
 
 if __name__ == '__main__':
