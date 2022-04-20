@@ -21,7 +21,7 @@ bash ./docker_run.sh
 ### Start WebSocket server
 
 ```
-$ ./ve python server.py -h
+$ python server.py -h
 usage: server.py [-h] [--host HOST] [--port PORT] --prefix PREFIX
 
 optional arguments:
@@ -30,7 +30,12 @@ optional arguments:
   --port PORT
   --prefix PREFIX  Allowed directories
 
-$ ./ve python server.py --host 127.0.0.1 --port 8765 --prefix /tmp/ --prefix /tmp/dir1
+$ python server.py --host 127.0.0.1 --port 8765 --prefix /tmp/ --prefix /tmp/dir1
+
+## In Docker You will change up commandline with 
+
+$ python server.py --host 0.0.0.0 --port 8765 --prefix /tmp/
+
 ```
 
 ### Start demo client
