@@ -1,5 +1,5 @@
 #docker build -t yankchina/logviewer_websocket .
-FROM python:slim
+FROM python:3.9.6-slim
 
 LABEL maintainer="yankchina@gmail.com"
 LABEL version="1.0"
