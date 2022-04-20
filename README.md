@@ -1,10 +1,19 @@
-# logviewer
+# logviewer with Websocket
 
 ## Setup
 
 ```
 $ python -m venv .virtualenv
 $ ./ve pip install -r requirements.txt
+```
+
+Or Using Docker
+
+```
+## build docker image
+bash ./docker_build.sh
+## run container with the docker image 
+bash ./docker_run.sh
 ```
 
 ## Demo
