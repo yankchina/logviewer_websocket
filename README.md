@@ -1,5 +1,9 @@
 # logviewer with Websocket
 
+
+## TODO
+
+- [ ] Using `supervisor` 
 ## Setup
 
 ```
@@ -41,7 +45,8 @@ $ python server.py --host 0.0.0.0 --port 8765 --prefix /tmp/
 ### Start demo client
 
 ```
-$ ./ve python -m http.server
+$ python -m http.server
 ```
 
 Create `/tmp/demo.log` file and browse `http://localhost:8000/demo.html`, you will see the content of the log file. Append logs to this file and the content will be shown in browser immediately.
+
